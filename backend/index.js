@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
+const DISCORD_REGISTER_WEBHOOK = process.env.DISCORD_REGISTER_WEBHOOK;
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
@@ -98,7 +99,17 @@ app.post('/api/auth/register', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         const newUser = new User({ username, email, password: hashedPassword, birthdate, platform: platform || 'PC', avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random&color=fff` });
-        await newUser.save();
+        await newUser.save();await sendDiscordWebhook(process.env.DISCORD_REGISTER_WEBHOOK, {
+    title: '🆕 Nuevo Registro en la Web',
+    description: 'Un usuario se ha registrado correctamente.',
+    fields: [
+        { name: '👤 Usuario', value: newUser.username, inline: true },
+        { name: '📧 Email', value: newUser.email, inline: true },
+        { name: '🆔 ID Usuario', value: newUser._id.toString(), inline: true },
+        { name: '🕒 Fecha', value: new Date().toLocaleString(), inline: false }
+    ],
+    color: 0x00ff99
+});
         const token = jwt.sign({ id: newUser._id, role: newUser.role, platform: newUser.platform }, process.env.JWT_SECRET || 'secret123', { expiresIn: '7d' });
         res.json({ token, message: 'Registro exitoso' });
     } catch (err) {
