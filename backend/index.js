@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
+const DISCORD_REGISTER_WEBHOOK = process.env.DISCORD_REGISTER_WEBHOOK;
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
